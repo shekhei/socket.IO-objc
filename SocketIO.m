@@ -517,6 +517,13 @@ NSString* const SocketIOException = @"SocketIOException";
                 break;
             }
             case 7: {
+                if ([_delegate respondsToSelector:@selector(socketIO:onError:)]) {
+                    if ( [packet.data compare:@"2"] == 0 ) {
+                        [_delegate socketIO:self onError:[NSError errorWithDomain:SocketIOError
+                                                                             code:SocketIOHandshakeFailed
+                                                                             userInfo:[NSDictionary dictionaryWithObject:packet.endpoint forKey:@"endpoint"]]];
+                    }
+                }
                 DEBUGLOG(@"error");
                 break;
             }
