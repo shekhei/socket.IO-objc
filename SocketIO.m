@@ -610,22 +610,27 @@ NSString* const SocketIOException = @"SocketIOException";
 
 - (void) connection:(NSURLConnection *)connection didFailWithError:(NSError *)error 
 {
-    NSLog(@"ERROR: handshake failed ... %@", [error localizedDescription]);
+    NSLog(@"ERROR: handshake failed ... %@, %d", [error localizedDescription], [error code]);
     
     _isConnected = NO;
     _isConnecting = NO;
     
     if ([_delegate respondsToSelector:@selector(socketIO:onError:)]) {
         NSMutableDictionary *errorInfo = [NSDictionary dictionaryWithObject:error forKey:NSLocalizedDescriptionKey];
-        
-        NSError *err = [NSError errorWithDomain:SocketIOError
+        NSError *err = nil;
+        if ( 403 == error.code ) {
+            err = [NSError errorWithDomain:SocketIOError
                                            code:SocketIOHandshakeFailed
                                        userInfo:errorInfo];
-        
+        } else if ( -1002 == error.code ) { // failed to connect
+            err = [NSError errorWithDomain:SocketIOError
+                                      code:SocketIOServerCouldNotBeReached
+                                  userInfo:errorInfo];
+        }
         [_delegate socketIO:self onError:err];
     }
     // TODO: deprecated - to be removed
-    else if ([_delegate respondsToSelector:@selector(socketIOHandshakeFailed:)]) {
+    else if ([_delegate respondsToSelector:@selector(socketIOHandshakeFailed:)] && 403 == error.code) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [_delegate socketIOHandshakeFailed:self];
