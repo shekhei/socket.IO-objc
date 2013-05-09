@@ -629,7 +629,7 @@ NSString* const SocketIOException = @"SocketIOException";
             err = [NSError errorWithDomain:SocketIOError
                                            code:SocketIOHandshakeFailed
                                        userInfo:errorInfo];
-        } else if ( -1002 == error.code ) { // failed to connect
+        } else if ( -998 >= error.code && error.code >= -1103) { // failed to connect
             err = [NSError errorWithDomain:SocketIOError
                                       code:SocketIOServerCouldNotBeReached
                                   userInfo:errorInfo];
